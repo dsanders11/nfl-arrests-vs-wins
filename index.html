@@ -10,518 +10,551 @@
     <script src="http://code.highcharts.com/modules/exporting.js"></script>
     <script src="http://cdn.ucb.org.br/Scripts/tablesorter/jquery.tablesorter.min.js"></script>
 
+    <style>
+      #result {
+      	text-align: right;
+      	color: gray;
+      	min-height: 2em;
+      }
+      #table-sparkline {
+      	margin: 0 auto;
+        border-collapse: collapse;
+      }
+      th {
+        font-weight: bold;
+        text-align: center;
+      }
+      td, th {
+        padding: 5px;
+        border-bottom: 1px solid silver;
+        height: 30px;
+        text-align: center;
+      }
+      
+      thead th {
+        border-top: 2px solid gray;
+        border-bottom: 2px solid gray;
+      }
+      .highcharts-tooltip > span {
+      	background: white;
+      	border: 1px solid silver;
+      	border-radius: 3px;
+      	box-shadow: 1px 1px 2px #888;
+      	padding: 8px;
+      }
+    </style>
+
     <script type='text/javascript'>//<![CDATA[
-
-$(document).ready(function() 
-    { 
-        $("#table-sparkline").tablesorter(); 
-    } 
-); 
-   
-
-$(function () {
-    /**
-     * Create a constructor for sparklines that takes some sensible defaults and merges in the individual
-     * chart options. This function is also available from the jQuery plugin as $(element).highcharts('SparkLine').
-     */
-    Highcharts.SparkLine = function (options, callback) {
-        var defaultOptions = {
-            chart: {
-                renderTo: (options.chart && options.chart.renderTo) || this,
-                backgroundColor: null,
-                borderWidth: 0,
-                type: 'area',
-                margin: [2, 0, 2, 0],
-                width: 120,
-                height: 30,
-                style: {
-                    overflow: 'visible'
-                },
-                skipClone: true
-            },
-            title: {
-                text: ''
-            },
-            credits: {
-                enabled: false
-            },
-            xAxis: {
-                labels: {
-                    enabled: false
-                },
-                title: {
-                    text: null
-                },
-                startOnTick: false,
-                endOnTick: false,
-                tickPositions: []
-            },
-            yAxis: {
-                endOnTick: false,
-                startOnTick: false,
-                labels: {
-                    enabled: false
-                },
-                title: {
-                    text: null
-                },
-                tickPositions: [0]
-            },
-            legend: {
-                enabled: false
-            },
-            tooltip: {
-                backgroundColor: null,
-                borderWidth: 0,
-                shadow: false,
-                useHTML: true,
-                hideDelay: 0,
-                shared: true,
-                padding: 0,
-                positioner: function (w, h, point) {
-                    return { x: point.plotX - w / 2, y: point.plotY - h};
-                }
-            },
-            plotOptions: {
-                series: {
-                    pointStart: 5,
-                    animation: false,
-                    lineWidth: 1,
-                    shadow: false,
-                    states: {
-                        hover: {
-                            lineWidth: 1
-                        }
-                    },
-                    marker: {
-                        radius: 1,
-                        states: {
-                            hover: {
-                                radius: 2
-                            }
-                        }
-                    },
-                    fillOpacity: 0.25
-                }
-            }
-        };
-        options = Highcharts.merge(defaultOptions, options);
-
-        return new Highcharts.Chart(options, callback);
-    };
-
-    var start = +new Date(),
-        $tds = $("td[data-sparkline]"),
-        fullLen = $tds.length,
-        n = 0;
-
-    // Creating 153 sparkline charts is quite fast in modern browsers, but IE8 and mobile
-    // can take some seconds, so we split the input into chunks and apply them in timeouts
-    // in order avoid locking up the browser process and allow interaction.
-    function doChunk() {
-        var time = +new Date(),
-            i,
-            len = $tds.length,
-            $td,
-            stringdata,
-            arr,
-            data,
-            chart;
-
-        for (i = 0; i < len; i += 1) {
-            $td = $($tds[i]);
-            stringdata = $td.data('sparkline');
-            arr = stringdata.split('; ');
-            data = $.map(arr[0].split(', '), parseFloat);
-            chart = {};
-
-            if (arr[1]) {
-                chart.type = arr[1];
-            }
-            if (i % 2 == 0) {
-                $td.highcharts('SparkLine', {
-                    yAxis: {
-                        max: 7
-                    },
-                    series: [{
-                        data: data,
-                        pointStart: 2010
-                    }],
-                    tooltip: {
-                        headerFormat: '<span style="font-size: 10px">In {point.x}</span><br/>',
-                        pointFormat: '<b>{point.y}</b> Arrests'
-                    },
-                    chart: chart
-                });
-            } else {
-                $td.highcharts('SparkLine', {
-                    yAxis: {
-                        max: 16
-                    },
-                    series: [{
-                        data: data,
-                        pointStart: 2010
-                    }],
-                    tooltip: {
-                        headerFormat: '<span style="font-size: 10px">{point.x} Season</span><br/>',
-                        pointFormat: '<b>{point.y}</b> Wins'
-                    },
-                    chart: chart
-                });
-            }
-
-            n += 1;
-
-            // If the process takes too much time, run a timeout to allow interaction with the browser
-            if (new Date() - time > 500) {
-                $tds.splice(0, i + 1);
-                setTimeout(doChunk, 0);
-                break;
-            }
-        }
-    }
-    doChunk();
-
-});
-
-$(function () {
-    $('#all-arrests').highcharts({
-        chart: {
-            type: 'scatter',
-            zoomType: 'xy'
-        },
-        legend: {
-            align: 'right',
-            layout: 'vertical',
-            verticalAlign: 'top',
-            y: 50
-        },
-        title: {
-            text: 'Wins vs Arrests of NFL Teams (Last 5 Seasons)'
-        },
-        subtitle: {
-            text: 'Source: USA Today NFL Arrest Database'
-        },
-        xAxis: {
-            allowDecimals: false,
-            min: 0,
-            max: 20,
-            title: {
-                enabled: true,
-                text: 'Arrests'
-            },
-            startOnTick: true,
-            endOnTick: true,
-            showLastLabel: true
-        },
-        yAxis: {
-            min: 20,
-            max: 70,
-            allowDecimals: false,
-            title: {
-                text: 'Wins'
-            }
-        },
-        plotOptions: {
-            scatter: {
-                marker: {
-                    radius: 5,
-                    states: {
-                        hover: {
-                            enabled: true,
-                            lineColor: 'rgb(100,100,100)'
-                        }
-                    }
-                },
-                states: {
-                    hover: {
-                        marker: {
-                            enabled: false
-                        }
-                    }
-                },
-                tooltip: {
-                    headerFormat: '<b>{point.key}</b><br>',
-                    pointFormat: '{point.x} arrests, {point.y} wins'
-                }
-            }
-        },
-        series: [{
-            name: 'NFC West',
-            type: 'scatter',
-            color: '#003B67',
-            marker: {
-                symbol: 'circle'
-            },
-            data: [
-                {x: 6.2, y: 39, name: 'Arizona Cardinals'},
-                {x: 10.8, y: 50, name: 'Seattle Seahawks'},
-                {x: 11.2, y: 50, name: 'San Fransico 49ers'},
-                {x: 6, y: 29, name: 'Saint Louis Rams'}
-            ]
-        }, {
-            name: 'NFC North',
-            type: 'scatter',
-            color: '#003B67',
-            marker: {
-                symbol: 'triangle'
-            },
-            data: [
-                {x: 9, y: 42, name: 'Chicago Bears'},
-                {x: 10, y: 38, name: 'Detroit Lions'},
-                {x: 6, y: 56, name: 'Green Bay Packers'},
-                {x: 18, y: 31, name: 'Minnesota Vikings'}
-            ]
-        }, {
-            name: 'NFC East',
-            type: 'scatter',
-            color: '#003B67',
-            marker: {
-                symbol: 'square'
-            },
-            data: [
-                {x: 7, y: 42, name: 'Dallas Cowboys'},
-                {x: 3, y: 41, name: 'New York Giants'},
-                {x: 6, y: 42, name: 'Philadelphia Eagles'},
-                {x: 11, y: 28, name: 'Washington Redskins'}
-            ]
-        }, {
-            name: 'NFC South',
-            type: 'scatter',
-            color: '#003B67',
-            marker: {
-                symbol: 'triangle-down'
-            },
-            data: [
-                {x: 6, y: 46, name: "Atlanta Falcons"},
-                {x: 3, y: 34, name: 'Carolina Panthers'},
-                {x: 3, y: 49, name: 'New Orleans Saints'},
-                {x: 15, y: 27, name: 'Tampa Bay Buccaneers'}
-            ]
-        }, {
-            name: 'AFC West',
-            type: 'scatter',
-            color: '#D0202B',
-            marker: {
-                symbol: 'circle'
-            },
-            data: [
-                {x: 17, y: 50, name: 'Denver Broncos'},
-                {x: 5.8, y: 39, name: 'Kansas City Chiefs'},
-                {x: 9, y: 27, name: 'Oakland Raiders'},
-                {x: 5, y: 42, name: 'San Diego Chargers'}
-            ]
-        }, {
-            name: 'AFC North',
-            type: 'scatter',
-            color: '#D0202B',
-            marker: {
-                symbol: 'triangle'
-            },
-            data: [
-                {x: 7, y: 52, name: 'Baltimore Ravens'},
-                {x: 13, y: 44, name: 'Cinncinati Bengals'},
-                {x: 11, y: 25, name: 'Cleveland Browns'},
-                {x: 5, y: 49, name: 'Pittsburgh Steelers'}
-            ]
-        }, {
-            name: 'AFC East',
-            type: 'scatter',
-            color: '#D0202B',
-            marker: {
-                symbol: 'square'
-            },
-            data: [
-                {x: 5, y: 31, name: 'Buffalo Bills'},
-                {x: 8, y: 36, name: 'Miami Dolphins'},
-                {x: 4, y: 63, name: 'New England Patriots'},
-                {x: 9, y: 37, name: 'New York Jets'}
-            ]
-        }, {
-            name: 'AFC South',
-            type: 'scatter',
-            color: '#D0202B',
-            marker: {
-                symbol: 'triangle-down'
-            },
-            data: [
-                {x: 0, y: 39, name: 'Houston Texans'},
-                {x: 11, y: 45, name: 'Indianapolis Colts'},
-                {x: 6, y: 22, name: 'Jacksonville Jaguars'},
-                {x: 13, y: 30, name: 'Tennessee Titans'}
-            ]
-        }]
-    });
-    $('#arrested-players').highcharts({
-        chart: {
-            type: 'scatter',
-            zoomType: 'xy'
-        },
-        title: {
-            text: 'Wins vs Arrested Players of NFL Teams (Last 5 Seasons)'
-        },
-        subtitle: {
-            text: 'Source: USA Today NFL Arrest Database'
-        },
-        legend: {
-            align: 'right',
-            layout: 'vertical',
-            verticalAlign: 'top',
-            y: 50
-        },
-        xAxis: {
-            allowDecimals: false,
-            min: 0,
-            max: 20,
-            title: {
-                enabled: true,
-                text: 'Arrested Players'
-            },
-            startOnTick: true,
-            endOnTick: true,
-            showLastLabel: true
-        },
-        yAxis: {
-            min: 20,
-            max: 70,
-            allowDecimals: false,
-            title: {
-                text: 'Wins'
-            }
-        },
-        plotOptions: {
-            scatter: {
-                marker: {
-                    radius: 5,
-                    states: {
-                        hover: {
-                            enabled: true,
-                            lineColor: 'rgb(100,100,100)'
-                        }
-                    }
-                },
-                states: {
-                    hover: {
-                        marker: {
-                            enabled: false
-                        }
-                    }
-                },
-                tooltip: {
-                    headerFormat: '<b>{point.key}</b><br>',
-                    pointFormat: '{point.x} arrests, {point.y} wins'
-                }
-            }
-        },
-        series: [{
-            name: 'NFC West',
-            type: 'scatter',
-            color: '#003B67',
-            marker: {
-                symbol: 'circle'
-            },
-            data: [
-                {x: 6.2, y: 39, name: 'Arizona Cardinals'},
-                {x: 8, y: 50, name: 'Seattle Seahawks'},
-                {x: 6, y: 50, name: 'San Fransico 49ers'},
-                {x: 6, y: 29, name: 'Saint Louis Rams'}
-            ]
-        }, {
-            name: 'NFC North',
-            type: 'scatter',
-            color: '#003B67',
-            marker: {
-                symbol: 'triangle'
-            },
-            data: [
-                {x: 8, y: 42, name: 'Chicago Bears'},
-                {x: 7, y: 38, name: 'Detroit Lions'},
-                {x: 4, y: 56, name: 'Green Bay Packers'},
-                {x: 13, y: 31, name: 'Minnesota Vikings'}
-            ]
-        }, {
-            name: 'NFC East',
-            type: 'scatter',
-            color: '#003B67',
-            marker: {
-                symbol: 'square'
-            },
-            data: [
-                {x: 7, y: 42, name: 'Dallas Cowboys'},
-                {x: 3, y: 41, name: 'New York Giants'},
-                {x: 6, y: 42, name: 'Philadelphia Eagles'},
-                {x: 7, y: 28, name: 'Washington Redskins'}
-            ]
-        }, {
-            name: 'NFC South',
-            type: 'scatter',
-            color: '#003B67',
-            marker: {
-                symbol: 'triangle-down'
-            },
-            data: [
-                {x: 5, y: 46, name: "Atlanta Falcons"},
-                {x: 3, y: 34, name: 'Carolina Panthers'},
-                {x: 3, y: 49, name: 'New Orleans Saints'},
-                {x: 13, y: 27, name: 'Tampa Bay Buccaneers'}
-            ]
-        }, {
-            name: 'AFC West',
-            type: 'scatter',
-            color: '#D0202B',
-            marker: {
-                symbol: 'circle'
-            },
-            data: [
-                {x: 15, y: 50, name: 'Denver Broncos'},
-                {x: 5.8, y: 39, name: 'Kansas City Chiefs'},
-                {x: 8, y: 27, name: 'Oakland Raiders'},
-                {x: 5, y: 42, name: 'San Diego Chargers'}
-            ]
-        }, {
-            name: 'AFC North',
-            type: 'scatter',
-            color: '#D0202B',
-            marker: {
-                symbol: 'triangle'
-            },
-            data: [
-                {x: 7, y: 52, name: 'Baltimore Ravens'},
-                {x: 9, y: 44, name: 'Cinncinati Bengals'},
-                {x: 11, y: 25, name: 'Cleveland Browns'},
-                {x: 5, y: 49, name: 'Pittsburgh Steelers'}
-            ]
-        }, {
-            name: 'AFC East',
-            type: 'scatter',
-            color: '#D0202B',
-            marker: {
-                symbol: 'square'
-            },
-            data: [
-                {x: 4, y: 31, name: 'Buffalo Bills'},
-                {x: 8, y: 36, name: 'Miami Dolphins'},
-                {x: 4, y: 63, name: 'New England Patriots'},
-                {x: 9, y: 37, name: 'New York Jets'}
-            ]
-        }, {
-            name: 'AFC South',
-            type: 'scatter',
-            color: '#D0202B',
-            marker: {
-                symbol: 'triangle-down'
-            },
-            data: [
-                {x: 0, y: 39, name: 'Houston Texans'},
-                {x: 11, y: 45, name: 'Indianapolis Colts'},
-                {x: 5, y: 22, name: 'Jacksonville Jaguars'},
-                {x: 8, y: 30, name: 'Tennessee Titans'}
-            ]
-        }]
-    });
-});
-
-//]]> 
+      $(document).ready(function() 
+          { 
+              $("#table-sparkline").tablesorter(); 
+          } 
+      ); 
+         
+      
+      $(function () {
+          /**
+           * Create a constructor for sparklines that takes some sensible defaults and merges in the individual
+           * chart options. This function is also available from the jQuery plugin as $(element).highcharts('SparkLine').
+           */
+          Highcharts.SparkLine = function (options, callback) {
+              var defaultOptions = {
+                  chart: {
+                      renderTo: (options.chart && options.chart.renderTo) || this,
+                      backgroundColor: null,
+                      borderWidth: 0,
+                      type: 'area',
+                      margin: [2, 0, 2, 0],
+                      width: 120,
+                      height: 30,
+                      style: {
+                          overflow: 'visible'
+                      },
+                      skipClone: true
+                  },
+                  title: {
+                      text: ''
+                  },
+                  credits: {
+                      enabled: false
+                  },
+                  xAxis: {
+                      labels: {
+                          enabled: false
+                      },
+                      title: {
+                          text: null
+                      },
+                      startOnTick: false,
+                      endOnTick: false,
+                      tickPositions: []
+                  },
+                  yAxis: {
+                      endOnTick: false,
+                      startOnTick: false,
+                      labels: {
+                          enabled: false
+                      },
+                      title: {
+                          text: null
+                      },
+                      tickPositions: [0]
+                  },
+                  legend: {
+                      enabled: false
+                  },
+                  tooltip: {
+                      backgroundColor: null,
+                      borderWidth: 0,
+                      shadow: false,
+                      useHTML: true,
+                      hideDelay: 0,
+                      shared: true,
+                      padding: 0,
+                      positioner: function (w, h, point) {
+                          return { x: point.plotX - w / 2, y: point.plotY - h};
+                      }
+                  },
+                  plotOptions: {
+                      series: {
+                          pointStart: 5,
+                          animation: false,
+                          lineWidth: 1,
+                          shadow: false,
+                          states: {
+                              hover: {
+                                  lineWidth: 1
+                              }
+                          },
+                          marker: {
+                              radius: 1,
+                              states: {
+                                  hover: {
+                                      radius: 2
+                                  }
+                              }
+                          },
+                          fillOpacity: 0.25
+                      }
+                  }
+              };
+              options = Highcharts.merge(defaultOptions, options);
+      
+              return new Highcharts.Chart(options, callback);
+          };
+      
+          var start = +new Date(),
+              $tds = $("td[data-sparkline]"),
+              fullLen = $tds.length,
+              n = 0;
+      
+          // Creating 153 sparkline charts is quite fast in modern browsers, but IE8 and mobile
+          // can take some seconds, so we split the input into chunks and apply them in timeouts
+          // in order avoid locking up the browser process and allow interaction.
+          function doChunk() {
+              var time = +new Date(),
+                  i,
+                  len = $tds.length,
+                  $td,
+                  stringdata,
+                  arr,
+                  data,
+                  chart;
+      
+              for (i = 0; i < len; i += 1) {
+                  $td = $($tds[i]);
+                  stringdata = $td.data('sparkline');
+                  arr = stringdata.split('; ');
+                  data = $.map(arr[0].split(', '), parseFloat);
+                  chart = {};
+      
+                  if (arr[1]) {
+                      chart.type = arr[1];
+                  }
+                  if (i % 2 == 0) {
+                      $td.highcharts('SparkLine', {
+                          yAxis: {
+                              max: 7
+                          },
+                          series: [{
+                              data: data,
+                              pointStart: 2010
+                          }],
+                          tooltip: {
+                              headerFormat: '<span style="font-size: 10px">In {point.x}</span><br/>',
+                              pointFormat: '<b>{point.y}</b> Arrests'
+                          },
+                          chart: chart
+                      });
+                  } else {
+                      $td.highcharts('SparkLine', {
+                          yAxis: {
+                              max: 16
+                          },
+                          series: [{
+                              data: data,
+                              pointStart: 2010
+                          }],
+                          tooltip: {
+                              headerFormat: '<span style="font-size: 10px">{point.x} Season</span><br/>',
+                              pointFormat: '<b>{point.y}</b> Wins'
+                          },
+                          chart: chart
+                      });
+                  }
+      
+                  n += 1;
+      
+                  // If the process takes too much time, run a timeout to allow interaction with the browser
+                  if (new Date() - time > 500) {
+                      $tds.splice(0, i + 1);
+                      setTimeout(doChunk, 0);
+                      break;
+                  }
+              }
+          }
+          doChunk();
+      
+      });
+      
+      $(function () {
+          $('#all-arrests').highcharts({
+              chart: {
+                  type: 'scatter',
+                  zoomType: 'xy'
+              },
+              legend: {
+                  align: 'right',
+                  layout: 'vertical',
+                  verticalAlign: 'top',
+                  y: 50
+              },
+              title: {
+                  text: 'Wins vs Arrests of NFL Teams (Last 5 Seasons)'
+              },
+              subtitle: {
+                  text: 'Source: USA Today NFL Arrest Database'
+              },
+              xAxis: {
+                  allowDecimals: false,
+                  min: 0,
+                  max: 20,
+                  title: {
+                      enabled: true,
+                      text: 'Arrests'
+                  },
+                  startOnTick: true,
+                  endOnTick: true,
+                  showLastLabel: true
+              },
+              yAxis: {
+                  min: 20,
+                  max: 70,
+                  allowDecimals: false,
+                  title: {
+                      text: 'Wins'
+                  }
+              },
+              plotOptions: {
+                  scatter: {
+                      marker: {
+                          radius: 5,
+                          states: {
+                              hover: {
+                                  enabled: true,
+                                  lineColor: 'rgb(100,100,100)'
+                              }
+                          }
+                      },
+                      states: {
+                          hover: {
+                              marker: {
+                                  enabled: false
+                              }
+                          }
+                      },
+                      tooltip: {
+                          headerFormat: '<b>{point.key}</b><br>',
+                          pointFormat: '{point.x} arrests, {point.y} wins'
+                      }
+                  }
+              },
+              series: [{
+                  name: 'NFC West',
+                  type: 'scatter',
+                  color: '#003B67',
+                  marker: {
+                      symbol: 'circle'
+                  },
+                  data: [
+                      {x: 6.2, y: 39, name: 'Arizona Cardinals'},
+                      {x: 10.8, y: 50, name: 'Seattle Seahawks'},
+                      {x: 11.2, y: 50, name: 'San Fransico 49ers'},
+                      {x: 6, y: 29, name: 'Saint Louis Rams'}
+                  ]
+              }, {
+                  name: 'NFC North',
+                  type: 'scatter',
+                  color: '#003B67',
+                  marker: {
+                      symbol: 'triangle'
+                  },
+                  data: [
+                      {x: 9, y: 42, name: 'Chicago Bears'},
+                      {x: 10, y: 38, name: 'Detroit Lions'},
+                      {x: 6, y: 56, name: 'Green Bay Packers'},
+                      {x: 18, y: 31, name: 'Minnesota Vikings'}
+                  ]
+              }, {
+                  name: 'NFC East',
+                  type: 'scatter',
+                  color: '#003B67',
+                  marker: {
+                      symbol: 'square'
+                  },
+                  data: [
+                      {x: 7, y: 42, name: 'Dallas Cowboys'},
+                      {x: 3, y: 41, name: 'New York Giants'},
+                      {x: 6, y: 42, name: 'Philadelphia Eagles'},
+                      {x: 11, y: 28, name: 'Washington Redskins'}
+                  ]
+              }, {
+                  name: 'NFC South',
+                  type: 'scatter',
+                  color: '#003B67',
+                  marker: {
+                      symbol: 'triangle-down'
+                  },
+                  data: [
+                      {x: 6, y: 46, name: "Atlanta Falcons"},
+                      {x: 3, y: 34, name: 'Carolina Panthers'},
+                      {x: 3, y: 49, name: 'New Orleans Saints'},
+                      {x: 15, y: 27, name: 'Tampa Bay Buccaneers'}
+                  ]
+              }, {
+                  name: 'AFC West',
+                  type: 'scatter',
+                  color: '#D0202B',
+                  marker: {
+                      symbol: 'circle'
+                  },
+                  data: [
+                      {x: 17, y: 50, name: 'Denver Broncos'},
+                      {x: 5.8, y: 39, name: 'Kansas City Chiefs'},
+                      {x: 9, y: 27, name: 'Oakland Raiders'},
+                      {x: 5, y: 42, name: 'San Diego Chargers'}
+                  ]
+              }, {
+                  name: 'AFC North',
+                  type: 'scatter',
+                  color: '#D0202B',
+                  marker: {
+                      symbol: 'triangle'
+                  },
+                  data: [
+                      {x: 7, y: 52, name: 'Baltimore Ravens'},
+                      {x: 13, y: 44, name: 'Cinncinati Bengals'},
+                      {x: 11, y: 25, name: 'Cleveland Browns'},
+                      {x: 5, y: 49, name: 'Pittsburgh Steelers'}
+                  ]
+              }, {
+                  name: 'AFC East',
+                  type: 'scatter',
+                  color: '#D0202B',
+                  marker: {
+                      symbol: 'square'
+                  },
+                  data: [
+                      {x: 5, y: 31, name: 'Buffalo Bills'},
+                      {x: 8, y: 36, name: 'Miami Dolphins'},
+                      {x: 4, y: 63, name: 'New England Patriots'},
+                      {x: 9, y: 37, name: 'New York Jets'}
+                  ]
+              }, {
+                  name: 'AFC South',
+                  type: 'scatter',
+                  color: '#D0202B',
+                  marker: {
+                      symbol: 'triangle-down'
+                  },
+                  data: [
+                      {x: 0, y: 39, name: 'Houston Texans'},
+                      {x: 11, y: 45, name: 'Indianapolis Colts'},
+                      {x: 6, y: 22, name: 'Jacksonville Jaguars'},
+                      {x: 13, y: 30, name: 'Tennessee Titans'}
+                  ]
+              }]
+          });
+          $('#arrested-players').highcharts({
+              chart: {
+                  type: 'scatter',
+                  zoomType: 'xy'
+              },
+              title: {
+                  text: 'Wins vs Arrested Players of NFL Teams (Last 5 Seasons)'
+              },
+              subtitle: {
+                  text: 'Source: USA Today NFL Arrest Database'
+              },
+              legend: {
+                  align: 'right',
+                  layout: 'vertical',
+                  verticalAlign: 'top',
+                  y: 50
+              },
+              xAxis: {
+                  allowDecimals: false,
+                  min: 0,
+                  max: 20,
+                  title: {
+                      enabled: true,
+                      text: 'Arrested Players'
+                  },
+                  startOnTick: true,
+                  endOnTick: true,
+                  showLastLabel: true
+              },
+              yAxis: {
+                  min: 20,
+                  max: 70,
+                  allowDecimals: false,
+                  title: {
+                      text: 'Wins'
+                  }
+              },
+              plotOptions: {
+                  scatter: {
+                      marker: {
+                          radius: 5,
+                          states: {
+                              hover: {
+                                  enabled: true,
+                                  lineColor: 'rgb(100,100,100)'
+                              }
+                          }
+                      },
+                      states: {
+                          hover: {
+                              marker: {
+                                  enabled: false
+                              }
+                          }
+                      },
+                      tooltip: {
+                          headerFormat: '<b>{point.key}</b><br>',
+                          pointFormat: '{point.x} arrests, {point.y} wins'
+                      }
+                  }
+              },
+              series: [{
+                  name: 'NFC West',
+                  type: 'scatter',
+                  color: '#003B67',
+                  marker: {
+                      symbol: 'circle'
+                  },
+                  data: [
+                      {x: 6.2, y: 39, name: 'Arizona Cardinals'},
+                      {x: 8, y: 50, name: 'Seattle Seahawks'},
+                      {x: 6, y: 50, name: 'San Fransico 49ers'},
+                      {x: 6, y: 29, name: 'Saint Louis Rams'}
+                  ]
+              }, {
+                  name: 'NFC North',
+                  type: 'scatter',
+                  color: '#003B67',
+                  marker: {
+                      symbol: 'triangle'
+                  },
+                  data: [
+                      {x: 8, y: 42, name: 'Chicago Bears'},
+                      {x: 7, y: 38, name: 'Detroit Lions'},
+                      {x: 4, y: 56, name: 'Green Bay Packers'},
+                      {x: 13, y: 31, name: 'Minnesota Vikings'}
+                  ]
+              }, {
+                  name: 'NFC East',
+                  type: 'scatter',
+                  color: '#003B67',
+                  marker: {
+                      symbol: 'square'
+                  },
+                  data: [
+                      {x: 7, y: 42, name: 'Dallas Cowboys'},
+                      {x: 3, y: 41, name: 'New York Giants'},
+                      {x: 6, y: 42, name: 'Philadelphia Eagles'},
+                      {x: 7, y: 28, name: 'Washington Redskins'}
+                  ]
+              }, {
+                  name: 'NFC South',
+                  type: 'scatter',
+                  color: '#003B67',
+                  marker: {
+                      symbol: 'triangle-down'
+                  },
+                  data: [
+                      {x: 5, y: 46, name: "Atlanta Falcons"},
+                      {x: 3, y: 34, name: 'Carolina Panthers'},
+                      {x: 3, y: 49, name: 'New Orleans Saints'},
+                      {x: 13, y: 27, name: 'Tampa Bay Buccaneers'}
+                  ]
+              }, {
+                  name: 'AFC West',
+                  type: 'scatter',
+                  color: '#D0202B',
+                  marker: {
+                      symbol: 'circle'
+                  },
+                  data: [
+                      {x: 15, y: 50, name: 'Denver Broncos'},
+                      {x: 5.8, y: 39, name: 'Kansas City Chiefs'},
+                      {x: 8, y: 27, name: 'Oakland Raiders'},
+                      {x: 5, y: 42, name: 'San Diego Chargers'}
+                  ]
+              }, {
+                  name: 'AFC North',
+                  type: 'scatter',
+                  color: '#D0202B',
+                  marker: {
+                      symbol: 'triangle'
+                  },
+                  data: [
+                      {x: 7, y: 52, name: 'Baltimore Ravens'},
+                      {x: 9, y: 44, name: 'Cinncinati Bengals'},
+                      {x: 11, y: 25, name: 'Cleveland Browns'},
+                      {x: 5, y: 49, name: 'Pittsburgh Steelers'}
+                  ]
+              }, {
+                  name: 'AFC East',
+                  type: 'scatter',
+                  color: '#D0202B',
+                  marker: {
+                      symbol: 'square'
+                  },
+                  data: [
+                      {x: 4, y: 31, name: 'Buffalo Bills'},
+                      {x: 8, y: 36, name: 'Miami Dolphins'},
+                      {x: 4, y: 63, name: 'New England Patriots'},
+                      {x: 9, y: 37, name: 'New York Jets'}
+                  ]
+              }, {
+                  name: 'AFC South',
+                  type: 'scatter',
+                  color: '#D0202B',
+                  marker: {
+                      symbol: 'triangle-down'
+                  },
+                  data: [
+                      {x: 0, y: 39, name: 'Houston Texans'},
+                      {x: 11, y: 45, name: 'Indianapolis Colts'},
+                      {x: 5, y: 22, name: 'Jacksonville Jaguars'},
+                      {x: 8, y: 30, name: 'Tennessee Titans'}
+                  ]
+              }]
+          });
+      });
+      
+      //]]> 
 
     </script>
   </head>
