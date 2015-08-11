@@ -59,6 +59,13 @@
            */
           Highcharts.SparkLine = function (options, callback) {
               var defaultOptions = {
+                  exporting: {
+                      buttons: {
+                        contextButton: {
+                          enabled: false
+                        }
+                      }
+                  },
                   chart: {
                       renderTo: (options.chart && options.chart.renderTo) || this,
                       backgroundColor: null,
