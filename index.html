@@ -1,0 +1,349 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>NFL Arrests vs Team Wins</title>
+
+    <script type='text/javascript' src='//code.jquery.com/jquery-1.9.1.js'></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script src="http://code.highcharts.com/modules/exporting.js"></script>
+    <script src="http://cdn.ucb.org.br/Scripts/tablesorter/jquery.tablesorter.min.js"></script>
+
+    <script type='text/javascript'>//<![CDATA[
+
+$(function () {
+    $('#all-arrests').highcharts({
+        chart: {
+            type: 'scatter',
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'Wins vs Arrests of NFL Teams (Last 5 Seasons)'
+        },
+        subtitle: {
+            text: 'Source: USA Today NFL Arrest Database'
+        },
+        xAxis: {
+            allowDecimals: false,
+            min: 0,
+            max: 20,
+            title: {
+                enabled: true,
+                text: 'Arrests'
+            },
+            startOnTick: true,
+            endOnTick: true,
+            showLastLabel: true
+        },
+        yAxis: {
+            min: 20,
+            max: 70,
+            allowDecimals: false,
+            title: {
+                text: 'Wins'
+            }
+        },
+        plotOptions: {
+            scatter: {
+                marker: {
+                    radius: 5,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            lineColor: 'rgb(100,100,100)'
+                        }
+                    }
+                },
+                states: {
+                    hover: {
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+                tooltip: {
+                    headerFormat: '<b>{point.key}</b><br>',
+                    pointFormat: '{point.x} arrests, {point.y} wins'
+                }
+            }
+        },
+        series: [{
+            name: 'NFC West',
+            type: 'scatter',
+            color: '#003B67',
+            marker: {
+                symbol: 'circle'
+            },
+            data: [
+                {x: 6.2, y: 39, name: 'Arizona Cardinals'},
+                {x: 10.8, y: 50, name: 'Seattle Seahawks'},
+                {x: 11.2, y: 50, name: 'San Fransico 49ers'},
+                {x: 6, y: 29, name: 'Saint Louis Rams'}
+            ]
+        }, {
+            name: 'NFC North',
+            type: 'scatter',
+            color: '#003B67',
+            marker: {
+                symbol: 'triangle'
+            },
+            data: [
+                {x: 9, y: 42, name: 'Chicago Bears'},
+                {x: 10, y: 38, name: 'Detroit Lions'},
+                {x: 6, y: 56, name: 'Green Bay Packers'},
+                {x: 18, y: 31, name: 'Minnesota Vikings'}
+            ]
+        }, {
+            name: 'NFC East',
+            type: 'scatter',
+            color: '#003B67',
+            marker: {
+                symbol: 'square'
+            },
+            data: [
+                {x: 7, y: 42, name: 'Dallas Cowboys'},
+                {x: 3, y: 41, name: 'New York Giants'},
+                {x: 6, y: 42, name: 'Philadelphia Eagles'},
+                {x: 11, y: 28, name: 'Washington Redskins'}
+            ]
+        }, {
+            name: 'NFC South',
+            type: 'scatter',
+            color: '#003B67',
+            marker: {
+                symbol: 'triangle-down'
+            },
+            data: [
+                {x: 6, y: 46, name: "Atlanta Falcons"},
+                {x: 3, y: 34, name: 'Carolina Panthers'},
+                {x: 3, y: 49, name: 'New Orleans Saints'},
+                {x: 15, y: 27, name: 'Tampa Bay Buccaneers'}
+            ]
+        }, {
+            name: 'AFC West',
+            type: 'scatter',
+            color: '#D0202B',
+            marker: {
+                symbol: 'circle'
+            },
+            data: [
+                {x: 17, y: 50, name: 'Denver Broncos'},
+                {x: 5.8, y: 39, name: 'Kansas City Chiefs'},
+                {x: 9, y: 27, name: 'Oakland Raiders'},
+                {x: 5, y: 42, name: 'San Diego Chargers'}
+            ]
+        }, {
+            name: 'AFC North',
+            type: 'scatter',
+            color: '#D0202B',
+            marker: {
+                symbol: 'triangle'
+            },
+            data: [
+                {x: 7, y: 52, name: 'Baltimore Ravens'},
+                {x: 13, y: 44, name: 'Cinncinati Bengals'},
+                {x: 11, y: 25, name: 'Cleveland Browns'},
+                {x: 5, y: 49, name: 'Pittsburgh Steelers'}
+            ]
+        }, {
+            name: 'AFC East',
+            type: 'scatter',
+            color: '#D0202B',
+            marker: {
+                symbol: 'square'
+            },
+            data: [
+                {x: 5, y: 31, name: 'Buffalo Bills'},
+                {x: 8, y: 36, name: 'Miami Dolphins'},
+                {x: 4, y: 63, name: 'New England Patriots'},
+                {x: 9, y: 37, name: 'New York Jets'}
+            ]
+        }, {
+            name: 'AFC South',
+            type: 'scatter',
+            color: '#D0202B',
+            marker: {
+                symbol: 'triangle-down'
+            },
+            data: [
+                {x: 0, y: 39, name: 'Houston Texans'},
+                {x: 11, y: 45, name: 'Indianapolis Colts'},
+                {x: 6, y: 22, name: 'Jacksonville Jaguars'},
+                {x: 13, y: 30, name: 'Tennessee Titans'}
+            ]
+        }]
+    });
+    $('#arrested-players').highcharts({
+        chart: {
+            type: 'scatter',
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'Wins vs Arrested Players of NFL Teams (Last 5 Seasons)'
+        },
+        subtitle: {
+            text: 'Source: USA Today NFL Arrest Database'
+        },
+        xAxis: {
+            allowDecimals: false,
+            min: 0,
+            max: 20,
+            title: {
+                enabled: true,
+                text: 'Arrested Players'
+            },
+            startOnTick: true,
+            endOnTick: true,
+            showLastLabel: true
+        },
+        yAxis: {
+            min: 20,
+            max: 70,
+            allowDecimals: false,
+            title: {
+                text: 'Wins'
+            }
+        },
+        plotOptions: {
+            scatter: {
+                marker: {
+                    radius: 5,
+                    states: {
+                        hover: {
+                            enabled: true,
+                            lineColor: 'rgb(100,100,100)'
+                        }
+                    }
+                },
+                states: {
+                    hover: {
+                        marker: {
+                            enabled: false
+                        }
+                    }
+                },
+                tooltip: {
+                    headerFormat: '<b>{point.key}</b><br>',
+                    pointFormat: '{point.x} arrests, {point.y} wins'
+                }
+            }
+        },
+        series: [{
+            name: 'NFC West',
+            type: 'scatter',
+            color: '#003B67',
+            marker: {
+                symbol: 'circle'
+            },
+            data: [
+                {x: 6.2, y: 39, name: 'Arizona Cardinals'},
+                {x: 8, y: 50, name: 'Seattle Seahawks'},
+                {x: 6, y: 50, name: 'San Fransico 49ers'},
+                {x: 6, y: 29, name: 'Saint Louis Rams'}
+            ]
+        }, {
+            name: 'NFC North',
+            type: 'scatter',
+            color: '#003B67',
+            marker: {
+                symbol: 'triangle'
+            },
+            data: [
+                {x: 8, y: 42, name: 'Chicago Bears'},
+                {x: 7, y: 38, name: 'Detroit Lions'},
+                {x: 4, y: 56, name: 'Green Bay Packers'},
+                {x: 13, y: 31, name: 'Minnesota Vikings'}
+            ]
+        }, {
+            name: 'NFC East',
+            type: 'scatter',
+            color: '#003B67',
+            marker: {
+                symbol: 'square'
+            },
+            data: [
+                {x: 7, y: 42, name: 'Dallas Cowboys'},
+                {x: 3, y: 41, name: 'New York Giants'},
+                {x: 6, y: 42, name: 'Philadelphia Eagles'},
+                {x: 7, y: 28, name: 'Washington Redskins'}
+            ]
+        }, {
+            name: 'NFC South',
+            type: 'scatter',
+            color: '#003B67',
+            marker: {
+                symbol: 'triangle-down'
+            },
+            data: [
+                {x: 5, y: 46, name: "Atlanta Falcons"},
+                {x: 3, y: 34, name: 'Carolina Panthers'},
+                {x: 3, y: 49, name: 'New Orleans Saints'},
+                {x: 13, y: 27, name: 'Tampa Bay Buccaneers'}
+            ]
+        }, {
+            name: 'AFC West',
+            type: 'scatter',
+            color: '#D0202B',
+            marker: {
+                symbol: 'circle'
+            },
+            data: [
+                {x: 15, y: 50, name: 'Denver Broncos'},
+                {x: 5.8, y: 39, name: 'Kansas City Chiefs'},
+                {x: 8, y: 27, name: 'Oakland Raiders'},
+                {x: 5, y: 42, name: 'San Diego Chargers'}
+            ]
+        }, {
+            name: 'AFC North',
+            type: 'scatter',
+            color: '#D0202B',
+            marker: {
+                symbol: 'triangle'
+            },
+            data: [
+                {x: 7, y: 52, name: 'Baltimore Ravens'},
+                {x: 9, y: 44, name: 'Cinncinati Bengals'},
+                {x: 11, y: 25, name: 'Cleveland Browns'},
+                {x: 5, y: 49, name: 'Pittsburgh Steelers'}
+            ]
+        }, {
+            name: 'AFC East',
+            type: 'scatter',
+            color: '#D0202B',
+            marker: {
+                symbol: 'square'
+            },
+            data: [
+                {x: 4, y: 31, name: 'Buffalo Bills'},
+                {x: 8, y: 36, name: 'Miami Dolphins'},
+                {x: 4, y: 63, name: 'New England Patriots'},
+                {x: 9, y: 37, name: 'New York Jets'}
+            ]
+        }, {
+            name: 'AFC South',
+            type: 'scatter',
+            color: '#D0202B',
+            marker: {
+                symbol: 'triangle-down'
+            },
+            data: [
+                {x: 0, y: 39, name: 'Houston Texans'},
+                {x: 11, y: 45, name: 'Indianapolis Colts'},
+                {x: 5, y: 22, name: 'Jacksonville Jaguars'},
+                {x: 8, y: 30, name: 'Tennessee Titans'}
+            ]
+        }]
+    });
+});
+
+//]]> 
+
+    </script>
+  </head>
+  <body>
+    <div id="all-arrests" style="min-width: 310px; height: 400px; max-width: 800px; margin: 0 auto"></div>
+    <div id="arrested-players" style="min-width: 310px; height: 400px; max-width: 800px; margin: 0 auto"></div>
+  </body>
+</html>
+
